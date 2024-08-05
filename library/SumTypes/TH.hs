@@ -217,7 +217,8 @@ mkSerializeFunc :: BothConstructors -> Q Clause
 mkSerializeFunc BothConstructors{..} = do
   varName <- newName "value"
   let
-    patternMatch = ConP sourceConstructor [VarP varName]
+    tmp = [VarP varName]
+    patternMatch = ConP sourceConstructor [] tmp
     constructor = AppE (ConE targetConstructor) (VarE varName)
   return $ Clause [patternMatch] (NormalB constructor) []
 
@@ -227,6 +228,6 @@ mkDeserializeFunc :: BothConstructors -> Q Clause
 mkDeserializeFunc BothConstructors{..} = do
   varName <- newName "value"
   let
-    patternMatch = ConP targetConstructor [VarP varName]
+    patternMatch = ConP targetConstructor [] [VarP varName]
     constructor = AppE (ConE 'Just) (AppE (ConE sourceConstructor) (VarE varName))
   return $ Clause [patternMatch] (NormalB constructor) []

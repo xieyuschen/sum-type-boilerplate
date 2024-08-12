@@ -4,14 +4,14 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           sum-type-boilerplate
-version:        0.1.2
-synopsis:       Library for reducing the boilerplate involved with sum types
-description:    Library for reducing the boilerplate involved in creating and manipulating sum types
+name:           x-sum-type-boilerplate
+version:        0.1.3
+synopsis:       (Forked) Library for reducing the boilerplate involved with sum types
+description:    (Forked) Library for reducing the boilerplate involved in creating and manipulating sum types
 category:       Types,TH
 stability:      experimental
-homepage:       https://github.com/jdreaver/sum-type-boilerplate#readme
-bug-reports:    https://github.com/jdreaver/sum-type-boilerplate/issues
+homepage:       https://github.com/xieyuschen/x-sum-type-boilerplate#readme
+bug-reports:    https://github.com/xieyuschen/x-sum-type-boilerplate/issues
 author:         David Reaver
 maintainer:     David Reaver, xieyuschen
 license:        MIT
@@ -23,18 +23,18 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/jdreaver/sum-type-boilerplate
+  location: https://github.com/xieyuschen/x-sum-type-boilerplate
 
 library
   exposed-modules:
       SumTypes.TH
   other-modules:
-      Paths_sum_type_boilerplate
+      Paths_x_sum_type_boilerplate
   hs-source-dirs:
       library
   ghc-options: -Wall
   build-depends:
-      base
+      base >= 4.1 && < 4.20
     , template-haskell
   default-language: Haskell2010
 
@@ -43,14 +43,14 @@ test-suite spec
   main-is: Spec.hs
   other-modules:
       SumTypes.THSpec
-      Paths_sum_type_boilerplate
+      Paths_x_sum_type_boilerplate
   hs-source-dirs:
       tests
   ghc-options: -Wall
   build-depends:
       base
     , hspec
-    , sum-type-boilerplate
+    , x-sum-type-boilerplate
     , template-haskell
     , hspec-discover
   default-language: Haskell2010

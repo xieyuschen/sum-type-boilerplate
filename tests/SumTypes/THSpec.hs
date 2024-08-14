@@ -3,12 +3,13 @@
 
 module SumTypes.THSpec (spec) where
 
+import SumTypes.TH
 import Test.Hspec
 
-import SumTypes.TH
-
 data TypeA = TypeA deriving (Show, Eq)
+
 data TypeB = TypeB deriving (Show, Eq)
+
 data TypeC = TypeC deriving (Show, Eq)
 
 constructSumType "MySum" defaultSumTypeOptions [''TypeA, ''TypeB, ''TypeC]
@@ -17,9 +18,11 @@ sumTypeConverter "otherSumToMySum" ''OtherSum ''MySum
 partialSumTypeConverter "mySumToOtherSum" ''MySum ''OtherSum
 
 deriving instance Show MySum
+
 deriving instance Eq MySum
 
 deriving instance Show OtherSum
+
 deriving instance Eq OtherSum
 
 spec :: Spec

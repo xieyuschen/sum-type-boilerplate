@@ -3,17 +3,19 @@
 
 module SumTypes.TH
   ( -- * Constructing sum types
-    constructSumType
-  , SumTypeOptions
-  , defaultSumTypeOptions
-  , sumTypeOptionsTagOptions
-  , SumTypeTagOptions (..)
-  , sumTypeOptionsConstructorStrictness
-  , SumTypeConstructorStrictness (..)
+    constructSumType,
+    SumTypeOptions,
+    defaultSumTypeOptions,
+    sumTypeOptionsTagOptions,
+    SumTypeTagOptions (..),
+    sumTypeOptionsConstructorStrictness,
+    SumTypeConstructorStrictness (..),
+
     -- * Converting between sum types
-  , sumTypeConverter
-  , partialSumTypeConverter
-  ) where
+    sumTypeConverter,
+    partialSumTypeConverter,
+  )
+where
 
 import Language.Haskell.TH
 
@@ -38,14 +40,13 @@ import Language.Haskell.TH
 -- > deriving instance Show MySum
 -- > deriving instance Eq MySum
 constructSumType :: String -> SumTypeOptions -> [Name] -> Q [Dec]
-constructSumType typeName SumTypeOptions{..} types = do
-  let
-    strictness = constructorStrictness sumTypeOptionsConstructorStrictness
-    mkConstructor name =
-      NormalC
-      (constructorName sumTypeOptionsTagOptions typeName name)
-      [(Bang NoSourceUnpackedness strictness, ConT name)]
-    constructors = map mkConstructor types
+constructSumType typeName SumTypeOptions {..} types = do
+  let strictness = constructorStrictness sumTypeOptionsConstructorStrictness
+      mkConstructor name =
+        NormalC
+          (constructorName sumTypeOptionsTagOptions typeName name)
+          [(Bang NoSourceUnpackedness strictness, ConT name)]
+      constructors = map mkConstructor types
   return [DataD [] (mkName typeName) [] Nothing constructors []]
 
 -- | Options for 'constructSumType'. Note that the constructor for this type is
@@ -53,8 +54,8 @@ constructSumType typeName SumTypeOptions{..} types = do
 -- the sake of backwards compatibility in case we add options.)
 data SumTypeOptions
   = SumTypeOptions
-  { sumTypeOptionsTagOptions :: SumTypeTagOptions
-  , sumTypeOptionsConstructorStrictness :: SumTypeConstructorStrictness
+  { sumTypeOptionsTagOptions :: SumTypeTagOptions,
+    sumTypeOptionsConstructorStrictness :: SumTypeConstructorStrictness
   }
 
 -- | Default options for 'SumTypeOptions'
@@ -68,22 +69,22 @@ data SumTypeOptions
 defaultSumTypeOptions :: SumTypeOptions
 defaultSumTypeOptions =
   SumTypeOptions
-  { sumTypeOptionsTagOptions = PrefixTagsWithTypeName
-  , sumTypeOptionsConstructorStrictness = LazySumTypeConstructors
-  }
+    { sumTypeOptionsTagOptions = PrefixTagsWithTypeName,
+      sumTypeOptionsConstructorStrictness = LazySumTypeConstructors
+    }
 
 -- | This type specifies how 'constructSumType' will generate the tags for each
 -- type.
 data SumTypeTagOptions
-  = PrefixTagsWithTypeName
-    -- ^ This option generates tags with the sum type name prefixed to each
+  = -- | This option generates tags with the sum type name prefixed to each
     -- tag.
-  | AppendTypeNameToTags
-    -- ^ This option generates tags with the sum type name appended to each
+    PrefixTagsWithTypeName
+  | -- | This option generates tags with the sum type name appended to each
     -- tag.
-  | ConstructTagName (String -> String)
-    -- ^ Uses the given function to construct an arbitrary tag name. The
+    AppendTypeNameToTags
+  | -- | Uses the given function to construct an arbitrary tag name. The
     -- argument to this function is the name of the tagged type.
+    ConstructTagName (String -> String)
 
 constructorName :: SumTypeTagOptions -> String -> Name -> Name
 constructorName PrefixTagsWithTypeName typeName = mkName . (typeName ++) . nameBase
@@ -92,10 +93,10 @@ constructorName (ConstructTagName mkConstructor) _ = mkName . mkConstructor . na
 
 -- | Defines if the constructors for the sum type should be lazy or strict.
 data SumTypeConstructorStrictness
-  = LazySumTypeConstructors
-    -- ^ Constructors will be lazy
-  | StrictSumTypeConstructors
-    -- ^ Constructors will be strict
+  = -- | Constructors will be lazy
+    LazySumTypeConstructors
+  | -- | Constructors will be strict
+    StrictSumTypeConstructors
   deriving (Show, Eq)
 
 constructorStrictness :: SumTypeConstructorStrictness -> SourceStrictness
@@ -126,13 +127,12 @@ constructorStrictness StrictSumTypeConstructors = SourceStrict
 sumTypeConverter :: String -> Name -> Name -> Q [Dec]
 sumTypeConverter functionName sourceType targetType = do
   bothConstructors <- matchTypeConstructors sourceType targetType
-  let
-    funcName = mkName functionName
+  let funcName = mkName functionName
   funcClauses <- mapM mkSerializeFunc bothConstructors
-  typeDecl <- [t| $(conT sourceType) -> $(conT targetType) |]
+  typeDecl <- [t|$(conT sourceType) -> $(conT targetType)|]
   return
-    [ SigD funcName typeDecl
-    , FunD funcName funcClauses
+    [ SigD funcName typeDecl,
+      FunD funcName funcClauses
     ]
 
 -- | Similar to 'sumTypeConverter', except not all types in the source sum type
@@ -163,15 +163,14 @@ sumTypeConverter functionName sourceType targetType = do
 partialSumTypeConverter :: String -> Name -> Name -> Q [Dec]
 partialSumTypeConverter functionName sourceType targetType = do
   bothConstructors <- matchTypeConstructors targetType sourceType
-  let
-    funcName = mkName functionName
-    wildcardClause = Clause [WildP] (NormalB (ConE 'Nothing)) []
+  let funcName = mkName functionName
+      wildcardClause = Clause [WildP] (NormalB (ConE 'Nothing)) []
   funcClauses <- mapM mkDeserializeFunc bothConstructors
-  typeDecl <- [t| $(conT sourceType) -> Maybe $(conT targetType) |]
+  typeDecl <- [t|$(conT sourceType) -> Maybe $(conT targetType)|]
 
   return
-    [ SigD funcName typeDecl
-    , FunD funcName (funcClauses ++ [wildcardClause])
+    [ SigD funcName typeDecl,
+      FunD funcName (funcClauses ++ [wildcardClause])
     ]
 
 matchTypeConstructors :: Name -> Name -> Q [BothConstructors]
@@ -198,36 +197,34 @@ matchConstructor :: [(Type, Name)] -> (Type, Name) -> Q BothConstructors
 matchConstructor targetConstructors (type', sourceConstructor) = do
   targetConstructor <-
     maybe
-    (fail $ "Can't find constructor in target type corresponding to " ++ nameBase sourceConstructor)
-    return
-    (lookup type' targetConstructors)
+      (fail $ "Can't find constructor in target type corresponding to " ++ nameBase sourceConstructor)
+      return
+      (lookup type' targetConstructors)
   return $ BothConstructors type' sourceConstructor targetConstructor
 
 -- | Utility type to hold the source and target constructors for a given type.
-data BothConstructors =
-  BothConstructors
-  { innerType :: Type
-  , sourceConstructor :: Name
-  , targetConstructor :: Name
+data BothConstructors
+  = BothConstructors
+  { innerType :: Type,
+    sourceConstructor :: Name,
+    targetConstructor :: Name
   }
 
 -- | Construct the TH function 'Clause' for the serialization function for a
 -- given type.
 mkSerializeFunc :: BothConstructors -> Q Clause
-mkSerializeFunc BothConstructors{..} = do
+mkSerializeFunc BothConstructors {..} = do
   varName <- newName "value"
-  let
-    tmp = [VarP varName]
-    patternMatch = ConP sourceConstructor [] tmp
-    constructor = AppE (ConE targetConstructor) (VarE varName)
+  let tmp = [VarP varName]
+      patternMatch = ConP sourceConstructor [] tmp
+      constructor = AppE (ConE targetConstructor) (VarE varName)
   return $ Clause [patternMatch] (NormalB constructor) []
 
 -- | Construct the TH function 'Clause' for the deserialization function for a
 -- given type.
 mkDeserializeFunc :: BothConstructors -> Q Clause
-mkDeserializeFunc BothConstructors{..} = do
+mkDeserializeFunc BothConstructors {..} = do
   varName <- newName "value"
-  let
-    patternMatch = ConP targetConstructor [] [VarP varName]
-    constructor = AppE (ConE 'Just) (AppE (ConE sourceConstructor) (VarE varName))
+  let patternMatch = ConP targetConstructor [] [VarP varName]
+      constructor = AppE (ConE 'Just) (AppE (ConE sourceConstructor) (VarE varName))
   return $ Clause [patternMatch] (NormalB constructor) []

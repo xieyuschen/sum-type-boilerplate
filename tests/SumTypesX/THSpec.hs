@@ -1,9 +1,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module SumTypes.THSpec (spec) where
+module SumTypesX.THSpec (spec) where
 
-import SumTypes.TH
+import SumTypesX.TH
 import Test.Hspec
 
 data TypeA = TypeA deriving (Show, Eq)

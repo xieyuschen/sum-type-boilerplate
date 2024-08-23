@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module SumTypes.TH
+module SumTypesX.TH
   ( -- * Constructing sum types
     constructSumType,
     SumTypeOptions,
